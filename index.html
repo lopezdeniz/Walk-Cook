@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Walk &amp; Cook — Silent Trails. Gourmet Fires.</title>
+<meta name="description" content="Walk and Cook is an immersive outdoor culinary escape. Simple ingredients meet open flames in the wild — no narration, no soundtrack, only fire and wind.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230a1610'/%3E%3Cpath d='M14 42 L26 20 L32 32 L38 18 L50 42' fill='none' stroke='%23d09a66' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Основной благородный темно-зеленый цвет как на референсе */
+    --bg-base: #0c1a13;       
+    --bg-card: rgba(18, 32, 23, 0.6); 
+    
+    --glass-border: rgba(255, 255, 255, 0.05);
+    
+    /* Золотисто-медный градиент для кнопок */
+    --gold: #c08552;
+    --gold-light: #e5b382;
+    --gold-grad: linear-gradient(135deg, #e5b382 0%, #c08552 100%);
+    
+    --text-main: #f0f2f0;
+    --text-dim: #a0aab2;
+    --zelle-purple: #7413dc;
+    --radius-lg: 16px;
+    --radius-pill: 50px;
+    --transition-smooth: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; background: var(--bg-base); }
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--gold); color: var(--bg-base); }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  
+  .font-serif { font-family: 'Fraunces', serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 5%;
+  }
+
+  /* --- Animations --- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+
+  /* --- Buttons --- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding: 16px 36px;
+    border-radius: var(--radius-pill);
+    transition: all 0.4s ease;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--gold-grad);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(192, 133, 82, 0.25);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(192, 133, 82, 0.4);
+    background: linear-gradient(135deg, #ebd0ba 0%, #c08552 100%);
+  }
+  .btn-glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+  }
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(192, 133, 82, 0.6);
+    color: var(--gold-light);
+    transform: translateY(-2px);
+  }
+
+  /* --- Navbar (Mini Nav) --- */
+  #mini-nav {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translate(-50%, -20px);
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    background: rgba(12, 26, 19, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    padding: 10px 14px 10px 24px;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s ease;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  #mini-nav.visible { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  .mn-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .mn-logo svg { width: 22px; height: 22px; }
+  .mn-link {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    transition: color 0.3s;
+    white-space: nowrap;
+  }
+  .mn-link:hover { color: var(--text-main); }
+  .mn-cta {
+    background: var(--gold-grad);
+    color: #000;
+    padding: 10px 24px;
+    border-radius: var(--radius-pill);
+    font-weight: 500;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .mn-cta:hover { transform: scale(1.03); box-shadow: 0 4px 15px rgba(192, 133, 82, 0.35); }
+
+  @media (max-width: 768px) {
+    #mini-nav { gap: 16px; padding: 8px 12px 8px 16px; }
+    .mn-link { display: none; }
+    .mn-cta { display: block; }
+  }
+
+  /* --- HERO --- */
+  #hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 20px;
+    overflow: hidden;
+  }
+  /* Блюр фона с костром */
+  .hero-bg-image {
+    position: absolute;
+    top: -30px; left: -30px; right: -30px; bottom: -30px; /* Выход за края скрывает белые рамки от блюра */
+    background: url('https://images.unsplash.com/photo-1445307806294-bff7f67ff225?q=80&w=2074&auto=format&fit=crop') center 30%/cover no-repeat;
+    filter: blur(12px) brightness(0.9);
+    z-index: 0;
+  }
+  /* Градиент уводящий блюр в темно-зеленый фон страницы */
+  .hero-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(12, 26, 19, 0.5) 0%, rgba(12, 26, 19, 0.75) 50%, var(--bg-base) 100%);
+    z-index: 1;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 840px;
+  }
+  .hero-mark {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 30px;
+    border: 1px solid rgba(229, 179, 130, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-mark svg { width: 30px; height: 30px; }
+  
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold-light);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: '';
+    width: 30px;
+    height: 1px;
+    background: rgba(229, 179, 130, 0.4);
+  }
+
+  .hero-title {
+    font-size: clamp(44px, 8vw, 96px);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    line-height: 1.05;
+    margin-bottom: 30px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  .hero-tagline {
+    font-size: clamp(16px, 2vw, 19px);
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-bottom: 48px;
+    line-height: 1.7;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* --- SECTIONS --- */
+  section { padding: 120px 0; position: relative; }
+  .section-header { text-align: center; margin-bottom: 70px; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .section-title {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    margin-bottom: 20px;
+  }
+  .section-subtitle {
+    font-size: 16px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* --- GALLERY (6 Photos + Glassmorphism) --- */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+  }
+  .plate-card {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/5;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+  }
+  .plate-img-wrap {
+    position: absolute;
+    inset: 0;
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .plate-card:hover .plate-img-wrap { transform: scale(1.06); }
+  .plate-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .plate-scrim {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    background: rgba(12, 26, 19, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transform: translateY(10px);
+    opacity: 0.9;
+    transition: all 0.4s ease;
+  }
+  .plate-card:hover .plate-scrim {
+    transform: translateY(0);
+    opacity: 1;
+    border-color: rgba(229, 179, 130, 0.3);
+  }
+  .plate-name { font-size: 20px; font-weight: 400; margin-bottom: 6px; color: var(--text-main); }
+  .plate-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold-light); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* --- SUPPORT / ZELLE --- */
+  #support { text-align: center; }
+  .zelle-wrapper {
+    max-width: 520px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 48px;
+    text-align: left;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+  }
+  .zelle-header-flex {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 36px;
+  }
+  .zelle-logo-box {
+    width: 60px;
+    height: 60px;
+    background: var(--zelle-purple);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .zelle-logo-box svg { width: 34px; height: 34px; fill: white; }
+  .zelle-title-box h3 { font-size: 20px; font-weight: 400; margin-bottom: 6px; font-family: 'Fraunces', serif; }
+  .zelle-title-box p { font-size: 14px; color: var(--text-dim); line-height: 1.5; }
+  
+  .zelle-details {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.02);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 36px;
+  }
+  .zelle-details .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .zelle-details .info-row:last-child { margin-bottom: 0; }
+  .zelle-details .info-label { color: var(--text-dim); }
+  .zelle-details .info-val { color: var(--text-main); font-weight: 500; text-align: right; font-family: 'JetBrains Mono', monospace;}
+  
+  /* QR Code */
+  .qr-container {
+    background: #ffffff;
+    padding: 14px;
+    border-radius: 14px;
+    margin: 0 auto 36px auto;
+    width: 190px;
+    height: 190px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  }
+  .qr-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; 
+    aspect-ratio: 1/1;
+  }
+
+  .btn-full { width: 100%; padding: 18px; font-size: 16px; }
+
+  /* --- FOOTER --- */
+  footer {
+    padding: 80px 0 40px;
+    background: transparent;
+  }
+  .footer-grid {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 40px;
+  }
+  .footer-brand { max-width: 320px; }
+  .footer-brand .mn-logo { font-size: 20px; margin-bottom: 16px; }
+  .footer-desc { color: var(--text-dim); font-size: 14px; line-height: 1.7; }
+  
+  .footer-links { display: flex; gap: 80px; }
+  .footer-col h5 { font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-dim); margin-bottom: 24px; }
+  .footer-col a, .footer-col span { display: block; font-size: 14px; color: var(--text-main); margin-bottom: 14px; text-decoration: none; transition: color 0.3s; }
+  .footer-col a:hover { color: var(--gold-light); }
+
+  .footer-bottom {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .social-icons { display: flex; gap: 16px; }
+  .social-icons a { color: var(--text-dim); transition: color 0.3s; }
+  .social-icons a:hover { color: var(--gold-light); }
+  .social-icons svg { width: 20px; height: 20px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 40px; left: 50%; transform: translate(-50%, 20px);
+    background: rgba(12, 26, 19, 0.95); backdrop-filter: blur(10px);
+    color: var(--text-main); border: 1px solid var(--gold-light);
+    padding: 14px 28px; border-radius: var(--radius-pill); font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    opacity: 0; pointer-events: none; transition: all 0.4s ease; z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  
+  @media (max-width: 768px) {
+    .zelle-wrapper { padding: 30px 20px; }
+    .footer-grid { flex-direction: column; }
+    .footer-links { flex-direction: column; gap: 40px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .gallery-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="mini-nav">
+  <a href="#hero" class="mn-logo">
+    <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="#c08552" stroke-width="1.5"/><path d="M14 42 L26 20 L32 32 L38 18 L50 42" stroke="#c08552" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+    Walk &amp; Cook
+  </a>
+  <a class="mn-link" href="#gallery">The Art</a>
+  <a class="mn-link" href="#support">Resupply</a>
+  <a class="mn-cta" href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener">Watch</a>
+</nav>
+
+<main>
+  <!-- HERO -->
+  <section id="hero">
+    <!-- Блюр изображение на фоне -->
+    <div class="hero-bg-image"></div>
+    <!-- Градиент уводящий в сплошной цвет -->
+    <div class="hero-bg-overlay"></div>
+
+    <div class="hero-content reveal">
+      <p class="hero-eyebrow">Walk far &middot; Cook well &middot; Listen to nature</p>
+      <div class="hero-mark">
+        <svg viewBox="0 0 64 64" fill="none"><path d="M10 46 L24 18 L32 32 L40 16 L54 46" stroke="#c08552" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <h1 class="hero-title font-serif">Walk <em>&amp;</em> Cook</h1>
+      <p class="hero-tagline">
+        An immersive outdoor culinary escape. Simple ingredients meet open flames to create visually beautiful, hearty dishes. No narration, no artificial soundtrack — only authentic cooking sounds and the calm atmosphere of the wild.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener">
+          Watch on YouTube
+        </a>
+        <a class="btn btn-glass" href="#support">
+          Support the Channel
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="gallery">
+    <div class="wrap">
+      <div class="section-header reveal">
+        <h2 class="section-title font-serif">The Culinary Art</h2>
+        <p class="section-subtitle">Take a breath, listen to the fire, and watch the process. Restaurant plating, miles from the nearest kitchen.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="plate-card reveal">
+          <div class="plate-img-wrap"><img src="images/dish-1.jpg" alt="Pan-seared beef tenderloin" loading="lazy"></div>
+          <div class="plate-scrim">
+            <h3 class="plate-name font-serif">Seared Beef Tenderloin</h3>
+            <span class="plate-tag">Blueberry reduction &middot; wild moss</span>
+          </div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.1s;">
+          <div class="plate-img-wrap"><img src="images/dish-2.jpg" alt="River crawfish" loading="lazy"></div>
+          <div class="plate-scrim">
+            <h3 class="plate-name font-serif">River Crawfish &amp; Mussels</h3>
+            <span class="plate-tag">Charred citrus &middot; wild herbs</span>
+          </div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.2s;">
+          <div class="plate-img-wrap"><img src="images/dish-3.jpg" alt="Wild Mushroom & Venison" loading="lazy"></div>
+          <div class="plate-scrim">
+            <h3 class="plate-name font-serif">Wild Mushroom &amp; Venison</h3>
+            <span class="plate-tag">Foraged chanterelle &middot; sea salt</span>
+          </div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.3s;">
+          <div class="plate-img-wrap"><img src="images/dish-4.jpg" alt="Pan-Seared Trout" loading="lazy"></div>
+          <div class="plate-scrim">
+            <h3 class="plate-name font-serif">Pan-Seared Trout</h3>
+            <span class="plate-tag">Brown butter &middot; wild blossom</span>
+          </div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.4s;">
+          <div class="plate-img-wrap"><img src="images/dish-5.jpg" alt="Venison Medallions" loading="lazy"></div>
+          <div class="plate-scrim">
+            <h3 class="plate-name font-serif">Venison Medallions</h3>
+            <span class="plate-tag">Wild cranberry &middot; chanterelle</span>
+          </div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.5s;">
+          <div class="plate-img-wrap"><img src="images/dish-6.jpg" alt="Seared Duck Breast" loading="lazy"></div>
+          <div class="plate-scrim">
+            <h3 class="plate-name font-serif">Seared Duck Breast</h3>
+            <span class="plate-tag">Forest mushroom &middot; lingonberry</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section id="support">
+    <div class="wrap">
+      <div class="section-header reveal">
+        <h2 class="section-title font-serif">Fuel the Journey</h2>
+        <p class="section-subtitle">Crafting these premium culinary escapes takes time, gear, and fresh ingredients. Help me keep the fire burning and the noise away.</p>
+      </div>
+
+      <div class="zelle-wrapper reveal">
+        <div class="zelle-header-flex">
+          <div class="zelle-logo-box">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 6h14L7 18h12v-2H9l10-12H5z"/>
+            </svg>
+          </div>
+          <div class="zelle-title-box">
+            <h3>Support via Zelle</h3>
+            <p>Every contribution goes back to the trail.</p>
+          </div>
+        </div>
+        
+        <div class="qr-container">
+           <img src="images/zelle-qr.jpg" alt="QR code for Zelle">
+        </div>
+
+        <div class="zelle-details">
+          <div class="info-row">
+            <span class="info-label">Name</span>
+            <span class="info-val">Leandr Lopez Deniz</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Zelle ID / Email</span>
+            <span class="info-val" id="zelle-email">misterleandr@gmail.com</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="zelle-copy" type="button">Copy ID &amp; Give with Zelle</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="mn-logo">
+          <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="#c08552" stroke-width="1.5"/><path d="M14 42 L26 20 L32 32 L38 18 L50 42" stroke="#c08552" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+          Walk &amp; Cook
+        </div>
+        <p class="footer-desc">Walk far. Cook well. Listen to nature. 🔪🥩</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Explore</h5>
+          <a href="#gallery">The Culinary Art</a>
+          <a href="#support">Fuel the Journey</a>
+        </div>
+        <div class="footer-col">
+          <h5>Connect</h5>
+          <a href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener">YouTube</a>
+          <span class="plain">lopezdenizoffcial@gmail.com</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> Walk &amp; Cook.</p>
+      <div class="social-icons">
+        <a href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2c-.25-1.4-1.35-2.5-2.75-2.75C16.9 4 12 4 12 4s-4.9 0-6.85.45C3.75 4.7 2.65 5.8 2.4 7.2 2 9.15 2 12 2 12s0 2.85.4 4.8c.25 1.4 1.35 2.5 2.75 2.75C7.1 20 12 20 12 20s4.9 0 6.85-.45c1.4-.25 2.5-1.35 2.75-2.75.4-1.95.4-4.8.4-4.8s0-2.85-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Zelle ID copied to clipboard!</div>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* Scroll Nav Appearance */
+const miniNav = document.getElementById('mini-nav');
+window.addEventListener('scroll', () => {
+  if(window.scrollY > 300) { miniNav.classList.add('visible'); }
+  else { miniNav.classList.remove('visible'); }
+});
+
+/* Intersection Observer for Scroll Reveals */
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.classList.add('in-view');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => observer.observe(el));
+
+/* Copy Zelle functionality */
+const zelleBtn = document.getElementById('zelle-copy');
+const toast = document.getElementById('toast');
+const emailText = document.getElementById('zelle-email').innerText;
+
+zelleBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(emailText);
+  } catch(err) {
+    console.error('Failed to copy', err);
+  }
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+});
+</script>
+
+</body>
+</html>
