@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Walk &amp; Cook — Silent Trails. Gourmet Fires.</title>
+<meta name="description" content="Walk and Cook is an immersive outdoor culinary escape. Simple ingredients meet open flames in the wild — no narration, no soundtrack, only fire and wind.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2327362c'/%3E%3Cpath d='M14 42 L26 20 L32 32 L38 18 L50 42' fill='none' stroke='%23dfb44f' stroke-width='3' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-glass: rgba(145, 170, 155, 0.4); 
+    --glass-border: rgba(255, 255, 255, 0.35);
+    --glass-hover: rgba(160, 185, 170, 0.55);
+    --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.6) inset;
+    
+    --gold: #dfb44f;
+    --gold-light: #fef0a5;
+    --gold-grad: linear-gradient(135deg, #dfb44f 0%, #b88c2b 100%);
+    
+    /* Улучшенный глубокий контрастный цвет для идеальной читаемости */
+    --text-main: #0e1712; 
+    --text-dim: #26362d; 
+    
+    --zelle-purple: #7413dc;
+    --eth-blue: #627eea;
+    --poly-purple: #8247e5;
+
+    --radius-lg: 24px;
+    --radius-pill: 50px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; background-color: #8fa398; }
+  body {
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--gold); color: #fff; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  
+  .font-serif { font-family: 'Fraunces', serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 5%;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* --- ФОНОВЫЙ БЛЮР --- */
+  .ambient-bg {
+    position: fixed;
+    top: -10vh; left: -10vw; width: 120vw; height: 120vh;
+    background-color: #9cb0a4;
+    background-image:
+      radial-gradient(circle at 50% 30%, #e8efe9 0%, transparent 65%),
+      radial-gradient(circle at 15% 20%, #c4d2cb 0%, transparent 55%),
+      radial-gradient(circle at 85% 70%, #a8bcaf 0%, transparent 60%),
+      radial-gradient(circle at 30% 80%, #688072 0%, transparent 70%),
+      radial-gradient(circle at 80% 20%, #5b7365 0%, transparent 60%);
+    filter: blur(90px);
+    z-index: -3;
+    pointer-events: none;
+  }
+  
+  .ambient-noise {
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.035; z-index: -2; pointer-events: none;
+  }
+
+  .ambient-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(150, 175, 160, 0.3) 100%);
+    z-index: -1; pointer-events: none;
+  }
+
+  /* --- Animations --- */
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+
+  /* --- Кнопки --- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.03em;
+    padding: 16px 36px; border-radius: var(--radius-pill);
+    transition: all 0.4s ease; cursor: pointer; border: none; text-decoration: none; width: 100%;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary {
+    background: var(--gold-grad); color: #fff; 
+    box-shadow: 0 6px 20px rgba(184, 140, 43, 0.35);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .btn-primary::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+    transform: rotate(45deg) translate(-100%, 100%);
+    transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(184, 140, 43, 0.5); }
+  .btn-primary:hover::after { transform: rotate(45deg) translate(100%, -100%); }
+
+  .btn-glass {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); color: var(--text-main);
+    box-shadow: var(--glass-shadow); font-weight: 600;
+  }
+  .btn-glass:hover {
+    background: var(--glass-hover); border-color: var(--gold); color: #8a6515;
+    transform: translateY(-2px);
+  }
+
+  /* --- Navbar --- */
+  #mini-nav {
+    position: fixed; top: 24px; left: 50%; transform: translate(-50%, -20px);
+    display: flex; align-items: center; gap: 32px;
+    background: var(--bg-glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-pill);
+    padding: 10px 14px 10px 24px; z-index: 999;
+    opacity: 0; pointer-events: none; transition: all 0.5s ease;
+    box-shadow: var(--glass-shadow);
+  }
+  #mini-nav.visible { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  .mn-logo { display: flex; align-items: center; gap: 10px; font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; letter-spacing: 0.05em; color: var(--text-main); }
+  .mn-logo svg { width: 22px; height: 22px; }
+  .mn-link { font-size: 13px; font-weight: 600; letter-spacing: 0.05em; color: var(--text-dim); transition: color 0.3s; white-space: nowrap; }
+  .mn-link:hover { color: var(--text-main); }
+  .mn-cta {
+    background: var(--gold-grad); color: #fff; padding: 10px 24px; border-radius: var(--radius-pill);
+    font-weight: 600; transition: transform 0.3s, box-shadow 0.3s; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .mn-cta:hover { transform: scale(1.03); box-shadow: 0 4px 15px rgba(184, 140, 43, 0.35); }
+
+  @media (max-width: 768px) {
+    #mini-nav { gap: 16px; padding: 8px 12px 8px 16px; }
+    .mn-link { display: none; }
+    .mn-cta { display: block; }
+  }
+
+  /* --- HERO --- */
+  #hero {
+    position: relative; min-height: 100svh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 120px 20px;
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 840px; }
+  .hero-mark {
+    width: 60px; height: 60px; margin: 0 auto 30px;
+    border: 1px solid rgba(223, 180, 79, 0.5); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-glass); backdrop-filter: blur(12px); box-shadow: var(--glass-shadow);
+  }
+  .hero-mark svg { width: 30px; height: 30px; }
+  
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px; letter-spacing: 0.2em; color: #7a5812; text-transform: uppercase;
+    margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 700;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after { content: ''; width: 30px; height: 1.5px; background: rgba(122, 88, 18, 0.4); }
+
+  .hero-title { font-size: clamp(44px, 8vw, 96px); font-weight: 400; letter-spacing: 0.02em; line-height: 1.05; margin-bottom: 30px; color: var(--text-main); }
+  .hero-title em { font-style: italic; color: #8a6515; font-weight: 400; }
+  .hero-tagline {
+    font-size: clamp(16px, 2vw, 19px); color: var(--text-dim); font-weight: 500;
+    margin-bottom: 48px; line-height: 1.7; max-width: 680px; margin-left: auto; margin-right: auto;
+  }
+  .hero-actions { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  .hero-actions .btn { width: auto; }
+
+  /* --- MANIFESTO --- */
+  .philosophy-section { padding: 80px 20px 40px; text-align: center; max-width: 800px; margin: 0 auto; }
+  .philosophy-text {
+    font-size: clamp(18px, 3vw, 24px); font-weight: 400; font-style: italic;
+    color: var(--text-main); line-height: 1.6; font-family: 'Fraunces', serif;
+  }
+  .philosophy-author {
+    margin-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    color: #7a5812; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 700;
+  }
+
+  /* --- SECTIONS --- */
+  section { padding: 80px 0; position: relative; }
+  .section-header { text-align: center; margin-bottom: 60px; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .section-title { font-size: clamp(32px, 5vw, 48px); font-weight: 400; letter-spacing: 0.01em; margin-bottom: 20px; color: var(--text-main); }
+  .section-subtitle { font-size: 16px; color: var(--text-dim); line-height: 1.7; font-weight: 500; }
+
+  /* --- GALLERY --- */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+  .plate-card {
+    position: relative; overflow: hidden; aspect-ratio: 4/5;
+    background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-lg); cursor: pointer;
+    box-shadow: var(--glass-shadow);
+  }
+  .plate-img-wrap { position: absolute; inset: 0; transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1); }
+  .plate-card:hover .plate-img-wrap { transform: scale(1.06); }
+  .plate-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  
+  .plate-scrim {
+    position: absolute; left: 16px; right: 16px; bottom: 16px;
+    background: rgba(235, 242, 238, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 14px;
+    padding: 20px; display: flex; flex-direction: column; justify-content: flex-end;
+    transform: translateY(10px); opacity: 0; transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  }
+  .plate-card:hover .plate-scrim { transform: translateY(0); opacity: 1; border-color: var(--gold); }
+  .plate-name { font-size: 20px; font-weight: 600; margin-bottom: 6px; color: #0e1712; }
+  .plate-tag { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #7a5812; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+
+  /* --- SUPPORT / CARDS --- */
+  .support-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px;
+    max-width: 1180px; margin: 0 auto;
+  }
+  
+  .support-card {
+    background: var(--bg-glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+    padding: 40px 30px; display: flex; flex-direction: column; align-items: center; text-align: center;
+    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    box-shadow: var(--glass-shadow);
+  }
+  .support-card:hover {
+    transform: translateY(-8px); border-color: var(--gold); 
+    box-shadow: 0 30px 60px rgba(184, 140, 43, 0.15), 0 0 1px 1px rgba(255, 255, 255, 0.8) inset;
+  }
+
+  .sc-header { margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; }
+  .sc-icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  }
+  .sc-icon.zelle { background: var(--zelle-purple); }
+  .sc-icon.usdc { background: var(--eth-blue); }
+  .sc-icon.usdt { background: var(--poly-purple); }
+  .sc-icon svg { width: 30px; height: 30px; fill: white; }
+  
+  .sc-header h3 { font-size: 22px; font-weight: 600; font-family: 'Fraunces', serif; margin-bottom: 4px; color: var(--text-main); }
+  .sc-header p { font-size: 14px; color: var(--text-dim); font-weight: 500; }
+
+  .sc-qr-wrap {
+    width: 100%; max-width: 240px; aspect-ratio: 1 / 1.05; 
+    border-radius: 16px; overflow: hidden; margin-bottom: 24px;
+    background: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: center; padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+  .sc-qr-wrap img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+
+  .sc-details {
+    width: 100%; background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px;
+    margin-bottom: 24px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;
+  }
+  .sc-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; }
+  .sc-row:last-child { margin-bottom: 0; }
+  .sc-label { color: var(--text-dim); font-weight: 600; }
+  .sc-val { 
+    color: var(--text-main); font-weight: 600; font-family: 'JetBrains Mono', monospace; 
+    text-align: right; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* --- FOOTER --- */
+  footer { padding: 80px 0 40px; position: relative; z-index: 2; border-top: 1px solid var(--glass-border); margin-top: 60px; }
+  .footer-grid { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; }
+  .footer-brand { max-width: 320px; }
+  .footer-brand .mn-logo { font-size: 20px; margin-bottom: 16px; color: var(--text-main); font-weight: 600; }
+  .footer-desc { color: var(--text-dim); font-size: 14px; line-height: 1.7; font-weight: 500; }
+  
+  .footer-links { display: flex; gap: 80px; }
+  .footer-col h5 { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-dim); margin-bottom: 24px; font-weight: 700; }
+  .footer-col a, .footer-col span { display: block; font-size: 14px; color: var(--text-main); margin-bottom: 14px; text-decoration: none; transition: color 0.3s; font-weight: 600; }
+  .footer-col a:hover { color: #8a6515; }
+
+  .footer-bottom {
+    margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--glass-border);
+    display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-dim); font-weight: 500;
+  }
+  .social-icons { display: flex; gap: 16px; }
+  .social-icons a { color: var(--text-dim); transition: color 0.3s; }
+  .social-icons a:hover { color: #8a6515; }
+  .social-icons svg { width: 20px; height: 20px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 40px; left: 50%; transform: translate(-50%, 20px);
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+    color: #0e1712; border: 1px solid var(--gold);
+    padding: 14px 28px; border-radius: var(--radius-pill); font-size: 14px;
+    font-family: 'JetBrains Mono', monospace; opacity: 0; pointer-events: none; transition: all 0.4s ease; z-index: 1000;
+    box-shadow: var(--glass-shadow); font-weight: 700;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  
+  @media (max-width: 1024px) { .support-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) {
+    .footer-grid { flex-direction: column; } .footer-links { flex-direction: column; gap: 40px; }
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); } .support-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 500px) { .gallery-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="ambient-bg"></div>
+<div class="ambient-noise"></div>
+<div class="ambient-overlay"></div>
+
+<nav id="mini-nav">
+  <a href="#hero" class="mn-logo">
+    <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="#b88c2b" stroke-width="1.5"/><path d="M14 42 L26 20 L32 32 L38 18 L50 42" stroke="#b88c2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+    Walk &amp; Cook
+  </a>
+  <a class="mn-link" href="#gallery">The Art</a>
+  <a class="mn-link" href="#support">Resupply</a>
+  <a class="mn-cta" href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener">Watch</a>
+</nav>
+
+<main>
+  <section id="hero">
+    <div class="hero-content reveal">
+      <p class="hero-eyebrow">Walk far &middot; Cook well &middot; Listen to nature</p>
+      <div class="hero-mark">
+        <svg viewBox="0 0 64 64" fill="none"><path d="M10 46 L24 18 L32 32 L40 16 L54 46" stroke="#b88c2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <h1 class="hero-title font-serif">Walk <em>&amp;</em> Cook</h1>
+      <p class="hero-tagline">
+        An immersive outdoor culinary escape. Simple ingredients meet open flames to create visually beautiful, hearty dishes. No narration, no artificial soundtrack — only authentic cooking sounds and the calm atmosphere of the wild.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener">
+          Watch on YouTube
+        </a>
+        <a class="btn btn-glass" href="#support">
+          Support the Channel
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="philosophy-section reveal">
+    <p class="philosophy-text">"We believe nature provides the best soundtrack. Every dish is an ASMR journey into the wild — where the crackle of the campfire and the sounds of raw preparation take center stage. No distractions. Just pure culinary art."</p>
+    <p class="philosophy-author">— The Walk &amp; Cook Philosophy</p>
+  </div>
+
+  <section id="gallery">
+    <div class="wrap">
+      <div class="section-header reveal">
+        <h2 class="section-title font-serif">The Culinary Art</h2>
+        <p class="section-subtitle">Take a breath, listen to the fire, and watch the process. Restaurant plating, miles from the nearest kitchen.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="plate-card reveal"><div class="plate-img-wrap"><img src="images/dish-1.jpg" alt="Pan-seared beef tenderloin" loading="lazy"></div>
+          <div class="plate-scrim"><h3 class="plate-name font-serif">Seared Beef Tenderloin</h3><span class="plate-tag">Blueberry reduction &middot; wild moss</span></div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.1s;"><div class="plate-img-wrap"><img src="images/dish-2.jpg" alt="River crawfish" loading="lazy"></div>
+          <div class="plate-scrim"><h3 class="plate-name font-serif">River Crawfish &amp; Mussels</h3><span class="plate-tag">Charred citrus &middot; wild herbs</span></div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.2s;"><div class="plate-img-wrap"><img src="images/dish-3.jpg" alt="Wild Mushroom & Venison" loading="lazy"></div>
+          <div class="plate-scrim"><h3 class="plate-name font-serif">Wild Mushroom &amp; Venison</h3><span class="plate-tag">Foraged chanterelle &middot; sea salt</span></div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.3s;"><div class="plate-img-wrap"><img src="images/dish-4.jpg" alt="Pan-Seared Trout" loading="lazy"></div>
+          <div class="plate-scrim"><h3 class="plate-name font-serif">Pan-Seared Trout</h3><span class="plate-tag">Brown butter &middot; wild blossom</span></div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.4s;"><div class="plate-img-wrap"><img src="images/dish-5.jpg" alt="Venison Medallions" loading="lazy"></div>
+          <div class="plate-scrim"><h3 class="plate-name font-serif">Venison Medallions</h3><span class="plate-tag">Wild cranberry &middot; chanterelle</span></div>
+        </div>
+        <div class="plate-card reveal" style="transition-delay: 0.5s;"><div class="plate-img-wrap"><img src="images/dish-6.jpg" alt="Seared Duck Breast" loading="lazy"></div>
+          <div class="plate-scrim"><h3 class="plate-name font-serif">Seared Duck Breast</h3><span class="plate-tag">Forest mushroom &middot; lingonberry</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="support">
+    <div class="wrap">
+      <div class="section-header reveal">
+        <h2 class="section-title font-serif">Fuel the Journey</h2>
+        <p class="section-subtitle">Crafting these premium culinary escapes takes time, gear, and fresh ingredients. Help me keep the fire burning and the noise away.</p>
+      </div>
+
+      <div class="support-grid">
+        
+        <!-- Zelle -->
+        <div class="support-card reveal">
+          <div class="sc-header">
+            <div class="sc-icon zelle"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 6h14L7 18h12v-2H9l10-12H5z"/></svg></div>
+            <h3>Zelle</h3><p>Direct bank transfer</p>
+          </div>
+          <div class="sc-qr-wrap"><img src="images/zelle-qr.jpg" alt="Zelle QR"></div>
+          <div class="sc-details">
+            <div class="sc-row"><span class="sc-label">Name</span><span class="sc-val">Leandr Lopez Deniz</span></div>
+            <div class="sc-row"><span class="sc-label">ID / Email</span><span class="sc-val">misterleandr@gmail.com</span></div>
+          </div>
+          <button class="btn btn-primary copy-btn" data-copy="misterleandr@gmail.com" data-type="Zelle ID">Copy Zelle ID</button>
+        </div>
+
+        <!-- USDC -->
+        <div class="support-card reveal" style="transition-delay: 0.1s;">
+          <div class="sc-header">
+            <div class="sc-icon usdc"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M15.925 23.969l-9.819-5.794L15.925 32l9.831-13.825-9.831 5.794zM16.075 0L6.256 16.325l9.819 5.806 9.831-5.806L16.075 0z"/></svg></div>
+            <h3>USDC</h3><p>Ethereum Network (ERC-20)</p>
+          </div>
+          <div class="sc-qr-wrap"><img src="images/usdc.jpg" alt="USDC QR Code"></div>
+          <div class="sc-details">
+            <div class="sc-row"><span class="sc-label">Address</span><span class="sc-val" title="0x88F0f220C21d5e6E7933Ba8bF2C6A55cf999694b">0x88F0f2...99694b</span></div>
+          </div>
+          <button class="btn btn-primary copy-btn" data-copy="0x88F0f220C21d5e6E7933Ba8bF2C6A55cf999694b" data-type="USDC Address">Copy Address</button>
+        </div>
+
+        <!-- USDT -->
+        <div class="support-card reveal" style="transition-delay: 0.2s;">
+          <div class="sc-header">
+            <div class="sc-icon usdt"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M21.84 8.76l-5.73-3.23a.35.35 0 0 0-.34 0l-5.73 3.23a.31.31 0 0 0-.17.28v6.46a.34.34 0 0 0 .17.3l2.87 1.67V14.1l-2.61-1.46v-2.92l2.61-1.46 2.61 1.46v2.92l-2.61 1.46v3.35l5.73 3.23a.35.35 0 0 0 .34 0l5.73-3.23a.31.31 0 0 0 .17-.28v-6.46a.34.34 0 0 0-.17-.3l-2.87-1.67v3.37l2.61 1.46v2.92l-2.61 1.46-2.61-1.46v-2.92l2.61-1.46V8.76z"/></svg></div>
+            <h3>USDT</h3><p>Polygon Network</p>
+          </div>
+          <div class="sc-qr-wrap"><img src="images/usdt.jpg" alt="USDT QR Code"></div>
+          <div class="sc-details">
+            <div class="sc-row"><span class="sc-label">Address</span><span class="sc-val" title="0x88F0f220C21d5e6E7933Ba8bF2C6A55cf999694b">0x88F0f2...99694b</span></div>
+          </div>
+          <button class="btn btn-primary copy-btn" data-copy="0x88F0f220C21d5e6E7933Ba8bF2C6A55cf999694b" data-type="USDT Address">Copy Address</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="mn-logo"><svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="30" stroke="#b88c2b" stroke-width="1.5"/><path d="M14 42 L26 20 L32 32 L38 18 L50 42" stroke="#b88c2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" fill="none"/></svg> Walk &amp; Cook</div>
+        <p class="footer-desc">Walk far. Cook well. Listen to nature. 🔪🥩</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h5>Explore</h5>
+          <a href="#gallery">The Culinary Art</a>
+          <a href="#support">Fuel the Journey</a>
+        </div>
+        <div class="footer-col">
+          <h5>Connect</h5>
+          <a href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener">YouTube</a>
+          <span class="plain">lopezdenizoffcial@gmail.com</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="year"></span> Walk &amp; Cook.</p>
+      <div class="social-icons">
+        <a href="https://www.youtube.com/@WalkandCook" target="_blank" rel="noopener" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2c-.25-1.4-1.35-2.5-2.75-2.75C16.9 4 12 4 12 4s-4.9 0-6.85.45C3.75 4.7 2.65 5.8 2.4 7.2 2 9.15 2 12 2 12s0 2.85.4 4.8c.25 1.4 1.35 2.5 2.75 2.75C7.1 20 12 20 12 20s4.9 0 6.85-.45c1.4-.25 2.5-1.35 2.75-2.75.4-1.95.4-4.8.4-4.8s0-2.85-.4-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied to clipboard!</div>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const miniNav = document.getElementById('mini-nav');
+window.addEventListener('scroll', () => {
+  if(window.scrollY > 300) { miniNav.classList.add('visible'); }
+  else { miniNav.classList.remove('visible'); }
+});
+
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting) {
+      entry.target.classList.add('in-view');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+revealEls.forEach(el => observer.observe(el));
+
+const copyBtns = document.querySelectorAll('.copy-btn');
+const toast = document.getElementById('toast');
+let toastTimeout;
+
+copyBtns.forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const textToCopy = btn.getAttribute('data-copy');
+    const type = btn.getAttribute('data-type');
+    
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      toast.innerText = `${type} copied to clipboard!`;
+    } catch(err) {
+      toast.innerText = 'Copied!';
+    }
+    
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
+  });
+});
+</script>
+
+</body>
+</html>
